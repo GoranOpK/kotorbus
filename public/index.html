@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kotorbus Reservation</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <link rel="stylesheet" href="src/style.css">
+  
+</head>
+
+<body>
+  
+  <header style="display: flex; align-items: center; justify-content: space-between;">
+  <div style="flex:1;"></div>
+  <img src="src/logo.png" alt="Kotorbus Logo" style="display:block; margin:auto;">
+  <div style="flex:1; display:flex; justify-content: flex-end; gap:10px; align-items:center;">
+    <img src="src/gb.png" alt="English" id="lang-en" style="width:32px; height:32px; cursor:pointer;">
+    <img src="src/mne.png" alt="Crnogorski" id="lang-cg" style="width:32px; height:32px; cursor:pointer;">
+  </div>
+</header>
+
+  <div class="main-container" style="display: flex; gap: 40px; align-items: flex-start;">
+    <div id="calendar"></div>
+    <div id="slot-section" style="display:block; min-width:320px;">
+      <input type="date" id="reservation_date" />
+      <h3 id="pick-date-label">Pick a date</h3>
+      <p id="arrival-label">Arrival time</p>
+      <select id="arrival-time-slot"></select>
+      <p id="departure-label">Departure time</p>
+      <select id="departure-time-slot"></select>
+      <input type="text" id="company_name" placeholder="Company name" required>
+      <input type="text" id="country-input" placeholder="Country" required>
+      <input type="text" id="registration-input" placeholder="Registration plates" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <select id="vehicle_type_id" required>
+        <option id="vehicle-category-option" value="">Select vehicle category</option>
+      </select>
+      <label id="agree-label" style="display:block; margin:10px 0;">
+        <input type="checkbox" id="user_agreement" required>
+        <span id="agree-text">I agree to the</span>
+        <a href="#" id="show-terms">terms and conditions</a>.
+      </label>
+      <span id="agreement-error" style="color:red; display:none;">You must agree to the terms to reserve a slot.</span>
+      <button id="reserve-btn" onclick="reserveSlot()">Reserve</button>
+    </div>
+  </div>
+
+  <!-- Modal for Terms and Conditions -->
+  <div id="terms-modal">
+    <div class="modal-content">
+      <span class="close" id="close-terms">&times;</span>
+      <h2 id="terms-title">Terms and Conditions</h2>
+      <div style="max-height:70vh; overflow-y:auto;" id="terms-content">
+        <!-- Leave this empty, JS will fill it -->
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <img src="src/logoop.png" alt="OpKotor" style="height:80px;">
+    <p>Bidonkaktus 🌵 &copy; 2025 Kotorbus</p>
+  </footer>
+<script src="src/script.js"></script>
+</body>
+</html>
