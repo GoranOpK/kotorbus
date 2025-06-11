@@ -1,94 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
-  setLanguage('en'); // or 'mne' if you want Montenegrin by default
-
-  // Calculate tomorrow's date string first
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const yyyy = tomorrow.getFullYear();
-  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const dd = String(tomorrow.getDate()).padStart(2, '0');
-  const tomorrowStr = `${yyyy}-${mm}-${dd}`;
-
-  // Set min date for the date input to tomorrow
-  const reservationDateInput = document.getElementById('reservation_date');
-  if (reservationDateInput) {
-    reservationDateInput.min = tomorrowStr;
-    reservationDateInput.value = tomorrowStr;
-    reservationDateInput.dispatchEvent(new Event('change'));
-  }
-
-  // Initialize FullCalendar with validRange using tomorrowStr
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    headerToolbar: {
-      left: '',
-      center: 'title',
-      right: 'prev,next'
-    },
-    validRange: {
-      start: tomorrowStr // Only allow selecting from tomorrow onwards
-    },
-    dateClick: function(info) {
-      calendar.select(info.date); // <-- This will highlight the clicked date
-      reservationDateInput.value = info.dateStr;
-      reservationDateInput.dispatchEvent(new Event('change'));
-      document.getElementById('slot-section').style.display = 'block';
-    }
-  });
-  calendar.render();
-
-  // Fetch vehicle categories from API and populate select
-  fetch('/api/vehicle-types')
-    .then(res => res.json())
-    .then(data => {
-      const select = document.getElementById('vehicle_type_id');
-      select.innerHTML = '<option value="">Select vehicle category</option>';
-      data.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type.id;
-        option.textContent = type.description_vehicle || type.name || type.category || type.title || `Type ${type.id}`;
-        select.appendChild(option);
-      });
-    });
-
-  const startHour = 8;
-  const endHour = 20;
-
-  function generateTimeSlots() {
-    const slots = [];
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let min = 0; min < 60; min += 20) {
-        slots.push(`${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
-      }
-    }
-    return slots;
-  }
-
-function fetchAllTimeSlots() {
-  fetch('/api/time-slots')
-    .then(res => res.json())
-    .then(data => {
-      // Example: log to console or display in a table
-      console.log(data);
-      
-    });
-}
-
-function fetchReservedSlots(date, callback) {
-  fetch('/api/timeslots/available?date=' + encodeURIComponent(date), {
-    headers: {
-      'Accept': 'application/json'
-    }
-  })
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
-    .then(data => callback(data))
-    .catch(() => callback([]));
-}
-
+// --- GLOBALNO DEFINISANE FUNKCIJE (mora biti van DOMContentLoaded) ---
 function fetchAvailableSlotsForDate(date, callback) {
   fetch('/api/timeslots/available?date=' + encodeURIComponent(date))
     .then(res => res.json())
@@ -97,30 +7,64 @@ function fetchAvailableSlotsForDate(date, callback) {
     });
 }
 
-  document.getElementById('reservation_date').addEventListener('change', function () {
-    const date = this.value;
-    fetchAvailableSlotsForDate(date, function(availableSlots) {
-      populateTimeSlotSelect('arrival-time-slot', availableSlots.map(s => s.time_slot));
-      populateTimeSlotSelect('departure-time-slot', availableSlots.map(s => s.time_slot));
+function populateTimeSlotSelect(selectId, times) {
+  const select = document.getElementById(selectId);
+  select.innerHTML = '<option value="">Select time slot</option>';
+  times.forEach(time => {
+    const option = document.createElement('option');
+    option.value = time;
+    option.textContent = time;
+    select.appendChild(option);
+  });
+}
+
+function filterTimeSlots() {
+  const arrivalSelect = document.getElementById('arrival-time-slot');
+  const departureSelect = document.getElementById('departure-time-slot');
+  const allArrivalOptions = Array.from(arrivalSelect.options).map(opt => opt.value).filter(Boolean);
+  const allDepartureOptions = Array.from(departureSelect.options).map(opt => opt.value).filter(Boolean);
+
+  const arrivalTime = arrivalSelect.value;
+  const departureTime = departureSelect.value;
+
+  if (arrivalTime) {
+    const prevDeparture = departureSelect.value;
+    departureSelect.innerHTML = '<option value="">Select time slot</option>';
+    allDepartureOptions.forEach(time => {
+      if (time > arrivalTime) {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        departureSelect.appendChild(option);
+      }
     });
-  });
 
-  document.getElementById('show-terms').addEventListener('click', function(e) {
-    e.preventDefault();
-    document.getElementById('terms-modal').style.display = 'block';
-  });
-  document.getElementById('close-terms').addEventListener('click', function() {
-    document.getElementById('terms-modal').style.display = 'none';
-  });
+    if (prevDeparture && prevDeparture > arrivalTime) {
+      departureSelect.value = prevDeparture;
+    } else {
+      departureSelect.value = '';
+    }
+  }
 
-  
-  document.getElementById('lang-en').addEventListener('click', function() {
-    setLanguage('en');
-  });
-  document.getElementById('lang-cg').addEventListener('click', function() {
-    setLanguage('mne');
-  });
-});
+  if (departureTime) {
+    const prevArrival = arrivalSelect.value;
+    arrivalSelect.innerHTML = '<option value="">Select time slot</option>';
+    allArrivalOptions.forEach(time => {
+      if (time < departureTime) {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        arrivalSelect.appendChild(option);
+      }
+    });
+
+    if (prevArrival && prevArrival < departureTime) {
+      arrivalSelect.value = prevArrival;
+    } else {
+      arrivalSelect.value = '';
+    }
+  }
+}
 
 async function reserveSlot() {
   const reservationDate = document.getElementById('reservation_date').value;
@@ -132,15 +76,14 @@ async function reserveSlot() {
   const email = document.getElementById('email').value.trim();
   const vehicleType = document.getElementById('vehicle_type_id').value;
 
-  
   const slotsResponse = await fetch('/api/timeslots');
   const slotsData = await slotsResponse.json();
   const slots = slotsData.data || slotsData;
   console.log('Vrijednost iz dropdown-a za dolazak:', arrivalTimeStr);
-console.log('Vrijednost iz dropdown-a za odlazak:', departureTimeStr);
-console.log('Svi slotovi sa backend-a:', slots);
+  console.log('Vrijednost iz dropdown-a za odlazak:', departureTimeStr);
+  console.log('Svi slotovi sa backend-a:', slots);
   const arrivalSlot = slots.find(slot => slot.time_slot.startsWith(arrivalTimeStr));
-const departureSlot = slots.find(slot => slot.time_slot.startsWith(departureTimeStr));
+  const departureSlot = slots.find(slot => slot.time_slot.startsWith(departureTimeStr));
 
   if (!arrivalSlot || !departureSlot) {
     alert('Could not find the selected time slot!');
@@ -156,35 +99,23 @@ const departureSlot = slots.find(slot => slot.time_slot.startsWith(departureTime
     license_plate: registration,
     vehicle_type_id: vehicleType,
     email: email
-    
   };
 
   fetch('/api/reservations/reserve', {
     method: 'POST',
     headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
     body: JSON.stringify(data)
   })
   .then(res => res.json())
   .then(response => {
     if (response.success) {
-        alert('Reservation successful!');
+      alert('Reservation successful!');
     } else {
-        alert('Reservation failed!');
+      alert('Reservation failed!');
     }
-  });
-}
-
-function populateTimeSlotSelect(selectId, times) {
-  const select = document.getElementById(selectId);
-  select.innerHTML = '<option value="">Select time slot</option>';
-  times.forEach(time => {
-    const option = document.createElement('option');
-    option.value = time;
-    option.textContent = time;
-    select.appendChild(option);
   });
 }
 
@@ -289,68 +220,88 @@ function setLanguage(lang) {
   if (termsModalDiv) termsModalDiv.innerHTML = termsText[lang];
 }
 
-function filterTimeSlots() {
-  const arrivalSelect = document.getElementById('arrival-time-slot');
-  const departureSelect = document.getElementById('departure-time-slot');
-  const allArrivalOptions = Array.from(arrivalSelect.options).map(opt => opt.value).filter(Boolean);
-  const allDepartureOptions = Array.from(departureSelect.options).map(opt => opt.value).filter(Boolean);
+// --- DOMContentLoaded EVENT HANDLER ---
+document.addEventListener('DOMContentLoaded', function () {
+  setLanguage('en'); // or 'mne' if you want Montenegrin by default
 
-  const arrivalTime = arrivalSelect.value;
-  const departureTime = departureSelect.value;
+  // Calculate today's date string first
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
 
-  
-  if (arrivalTime) {
-    const prevDeparture = departureSelect.value;
-    departureSelect.innerHTML = '<option value="">Select time slot</option>';
-    allDepartureOptions.forEach(time => {
-      if (time > arrivalTime) {
-        const option = document.createElement('option');
-        option.value = time;
-        option.textContent = time;
-        departureSelect.appendChild(option);
-      }
-    });
-    
-    if (prevDeparture && prevDeparture > arrivalTime) {
-      departureSelect.value = prevDeparture;
-    } else {
-      departureSelect.value = '';
-    }
+  // Set min date for the date input to today
+  const reservationDateInput = document.getElementById('reservation_date');
+  if (reservationDateInput) {
+    reservationDateInput.min = todayStr;
+    reservationDateInput.value = todayStr;
+    reservationDateInput.dispatchEvent(new Event('change'));
   }
 
-  
-  if (departureTime) {
-    const prevArrival = arrivalSelect.value;
-    arrivalSelect.innerHTML = '<option value="">Select time slot</option>';
-    allArrivalOptions.forEach(time => {
-      if (time < departureTime) {
-        const option = document.createElement('option');
-        option.value = time;
-        option.textContent = time;
-        arrivalSelect.appendChild(option);
-      }
-    });
-    
-    if (prevArrival && prevArrival < departureTime) {
-      arrivalSelect.value = prevArrival;
-    } else {
-      arrivalSelect.value = '';
+  // Initialize FullCalendar with validRange using todayStr
+  const calendarEl = document.getElementById('calendar');
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: '',
+      center: 'title',
+      right: 'prev,next'
+    },
+    validRange: {
+      start: todayStr // Only allow selecting from today onwards
+    },
+    dateClick: function(info) {
+      calendar.select(info.date); // <-- This will highlight the clicked date
+      reservationDateInput.value = info.dateStr;
+      reservationDateInput.dispatchEvent(new Event('change'));
+      document.getElementById('slot-section').style.display = 'block';
     }
-  }
-}
+  });
+  calendar.render();
 
-// Attach listeners after populating selects
-document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
-document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
+  // Fetch vehicle categories from API and populate select
+  fetch('/api/vehicle-types')
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('vehicle_type_id');
+      select.innerHTML = '<option value="">Select vehicle category</option>';
+      data.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.description_vehicle || type.name || type.category || type.title || `Type ${type.id}`;
+        select.appendChild(option);
+      });
+    });
 
-// When you repopulate the selects (e.g. on date change), also re-attach listeners:
-document.getElementById('reservation_date').addEventListener('change', function () {
-  const date = this.value;
-  fetchAvailableSlotsForDate(date, function(availableSlots) {
-    populateTimeSlotSelect('arrival-time-slot', availableSlots.map(s => s.time_slot));
-    populateTimeSlotSelect('departure-time-slot', availableSlots.map(s => s.time_slot));
-    // Re-attach listeners after repopulating
-    document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
-    document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
+  // Slušaj promene na dropdown-ovima za filtraciju vremena
+  document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
+  document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
+
+  // Kada se promeni datum, ponovo povuci dostupne slotove
+  document.getElementById('reservation_date').addEventListener('change', function () {
+    const date = this.value;
+    fetchAvailableSlotsForDate(date, function(availableSlots) {
+      populateTimeSlotSelect('arrival-time-slot', availableSlots.map(s => s.time_slot));
+      populateTimeSlotSelect('departure-time-slot', availableSlots.map(s => s.time_slot));
+      // Re-attach listeners after repopulating
+      document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
+      document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
+    });
+  });
+
+  document.getElementById('show-terms').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('terms-modal').style.display = 'block';
+  });
+  document.getElementById('close-terms').addEventListener('click', function() {
+    document.getElementById('terms-modal').style.display = 'none';
+  });
+
+  document.getElementById('lang-en').addEventListener('click', function() {
+    setLanguage('en');
+  });
+  document.getElementById('lang-cg').addEventListener('click', function() {
+    setLanguage('mne');
   });
 });

@@ -9,28 +9,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Log Channel
+    | Podrazumijevani log kanal
     |--------------------------------------------------------------------------
     |
-    | This option defines the default log channel that is utilized to write
-    | messages to your logs. The value provided here should match one of
-    | the channels present in the list of "channels" configured below.
+    | Ovdje biraš koji log kanal će Laravel koristiti za upisivanje logova.
+    | Vrijednost mora odgovarati nekom od kanala iz "channels" ispod.
+    | Najčešće se koristi "stack" koji grupiše više kanala.
     |
     */
-
     'default' => env('LOG_CHANNEL', 'stack'),
 
     /*
     |--------------------------------------------------------------------------
-    | Deprecations Log Channel
+    | Kanal za deprecated logove
     |--------------------------------------------------------------------------
     |
-    | This option controls the log channel that should be used to log warnings
-    | regarding deprecated PHP and library features. This allows you to get
-    | your application ready for upcoming major versions of dependencies.
+    | Ovdje biraš gdje će se logovati deprecated upozorenja iz PHP-a i
+    | biblioteka. Može biti "null" (da se ignorišu) ili npr. "single".
+    | "trace" uključuje stack trace u log poruku.
     |
     */
-
     'deprecations' => [
         'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
         'trace' => env('LOG_DEPRECATIONS_TRACE', false),
@@ -38,41 +36,44 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Log Channels
+    | Log Kanali
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the log channels for your application. Laravel
-    | utilizes the Monolog PHP logging library, which includes a variety
-    | of powerful log handlers and formatters that you're free to use.
+    | Ovdje podešavaš sve kanale za logovanje aplikacije.
+    | Laravel koristi Monolog, pa imaš razne opcije: fajl, svakodnevne logove,
+    | Slack, syslog, errorlog, custom kanale itd.
     |
-    | Available drivers: "single", "daily", "slack", "syslog",
-    |                    "errorlog", "monolog", "custom", "stack"
+    | Dostupni driveri: "single", "daily", "slack", "syslog",
+    |                   "errorlog", "monolog", "custom", "stack"
     |
     */
-
     'channels' => [
 
+        // Stack kanal - možeš kombinovati više kanala u jedan (najčešće koristiš ovo)
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => explode(',', env('LOG_STACK', 'single')), // podrazumijevano koristi "single"
             'ignore_exceptions' => false,
         ],
 
+        // Single - piše sve logove u jedan fajl
         'single' => [
             'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'path' => storage_path('logs/laravel.log'), // gdje se čuvaju logovi
+            'level' => env('LOG_LEVEL', 'debug'), // nivo logovanja
             'replace_placeholders' => true,
         ],
 
+        // Daily - piše logove po danima (fajl za svaki dan)
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
+            'days' => env('LOG_DAILY_DAYS', 14), // koliko dana čuva logove
             'replace_placeholders' => true,
         ],
 
+        // Slack - šalje kritične logove na Slack kanal (potreban webhook url)
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
@@ -82,6 +83,7 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Papertrail - cloud syslog servis (koristi Monolog handler)
         'papertrail' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -94,6 +96,7 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        // STDERR - loguje direktno na standard error (npr. za docker)
         'stderr' => [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -105,6 +108,7 @@ return [
             'processors' => [PsrLogMessageProcessor::class],
         ],
 
+        // Syslog - šalje logove na syslog servis OS-a
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
@@ -112,17 +116,20 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Errorlog - koristi PHP-ov error_log
         'errorlog' => [
             'driver' => 'errorlog',
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
         ],
 
+        // Null - ništa se ne loguje (korisno kad ne želiš nikakav log)
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
         ],
 
+        // Emergency - koristi se kad svi ostali kanali nisu dostupni
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

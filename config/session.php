@@ -6,14 +6,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Session Driver
+    | Podrazumijevani Session Driver
     |--------------------------------------------------------------------------
     |
-    | This option determines the default session driver that is utilized for
-    | incoming requests. Laravel supports a variety of storage options to
-    | persist session data. Database storage is a great default choice.
+    | Ovdje biraš kako će Laravel čuvati korisničke sesije (podatke o loginu,
+    | korpi itd.). Najčešće je to "file" ili "database". Ako koristiš "database",
+    | moraš imati odgovarajuću tabelu u bazi.
     |
-    | Supported: "file", "cookie", "database", "memcached",
+    | Podržano: "file", "cookie", "database", "memcached",
     |            "redis", "dynamodb", "array"
     |
     */
@@ -22,28 +22,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Lifetime
+    | Trajanje Sesije
     |--------------------------------------------------------------------------
     |
-    | Here you may specify the number of minutes that you wish the session
-    | to be allowed to remain idle before it expires. If you want them
-    | to expire immediately when the browser is closed then you may
-    | indicate that via the expire_on_close configuration option.
+    | Koliko minuta će sesija biti aktivna dok korisnik ne radi ništa.
+    | Nakon tog vremena, korisnik se automatski izloguje.
     |
     */
 
     'lifetime' => (int) env('SESSION_LIFETIME', 120),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false), // Ako je true, sesija ističe kad se zatvori browser
 
     /*
     |--------------------------------------------------------------------------
-    | Session Encryption
+    | Enkripcija Sesije
     |--------------------------------------------------------------------------
     |
-    | This option allows you to easily specify that all of your session data
-    | should be encrypted before it's stored. All encryption is performed
-    | automatically by Laravel and you may use the session like normal.
+    | Ako uključiš ovu opciju, svi podaci iz sesije će biti šifrovani na disku ili u bazi.
+    | Preporučeno je ostaviti false osim ako baš imaš osjetljive podatke.
     |
     */
 
@@ -51,12 +48,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session File Location
+    | Lokacija za File Session Driver
     |--------------------------------------------------------------------------
     |
-    | When utilizing the "file" session driver, the session files are placed
-    | on disk. The default storage location is defined here; however, you
-    | are free to provide another location where they should be stored.
+    | Ako koristiš "file" kao session driver, ovdje se čuvaju svi session fajlovi.
+    | Podrazumijevano je storage/framework/sessions.
     |
     */
 
@@ -67,9 +63,8 @@ return [
     | Session Database Connection
     |--------------------------------------------------------------------------
     |
-    | When using the "database" or "redis" session drivers, you may specify a
-    | connection that should be used to manage these sessions. This should
-    | correspond to a connection in your database configuration options.
+    | Ako koristiš "database" ili "redis" kao session driver, ovdje možeš izabrati
+    | koju konekciju iz config/database.php koristiš.
     |
     */
 
@@ -77,12 +72,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Database Table
+    | Ime Tabele za Sesije
     |--------------------------------------------------------------------------
     |
-    | When using the "database" session driver, you may specify the table to
-    | be used to store sessions. Of course, a sensible default is defined
-    | for you; however, you're welcome to change this to another table.
+    | Ako koristiš "database" kao session driver, ovdje zadaješ ime tabele u bazi.
+    | Podrazumijevana je "sessions".
     |
     */
 
@@ -90,14 +84,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Cache Store
+    | Cache Store za Sesiju
     |--------------------------------------------------------------------------
     |
-    | When using one of the framework's cache driven session backends, you may
-    | define the cache store which should be used to store the session data
-    | between requests. This must match one of your defined cache stores.
+    | Ako koristiš neki od cache baziranih session drivera (redis, memcached itd.),
+    | ovdje možeš izabrati koji cache "store" iz config/cache.php koristiš.
     |
-    | Affects: "dynamodb", "memcached", "redis"
+    | Važi za: "apc", "dynamodb", "memcached", "redis"
     |
     */
 
@@ -105,12 +98,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Sweeping Lottery
+    | Šansa za Čišćenje Starih Sesija
     |--------------------------------------------------------------------------
     |
-    | Some session drivers must manually sweep their storage location to get
-    | rid of old sessions from storage. Here are the chances that it will
-    | happen on a given request. By default, the odds are 2 out of 100.
+    | Neki session driveri samo povremeno brišu stare sesije. Ovdje zadaješ
+    | vjerovatnoću da će se "čišćenje" desiti na svakom requestu.
+    | [2, 100] znači 2% šansa.
     |
     */
 
@@ -118,12 +111,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Cookie Name
+    | Ime Session Cookie-a
     |--------------------------------------------------------------------------
     |
-    | Here you may change the name of the session cookie that is created by
-    | the framework. Typically, you should not need to change this value
-    | since doing so does not grant a meaningful security improvement.
+    | Ovo je ime kolačića (cookie) u browseru korisnika gdje se čuva ID sesije.
+    | Obično nema potrebe mijenjati ovo.
     |
     */
 
@@ -134,12 +126,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Cookie Path
+    | Putanja za Session Cookie
     |--------------------------------------------------------------------------
     |
-    | The session cookie path determines the path for which the cookie will
-    | be regarded as available. Typically, this will be the root path of
-    | your application, but you're free to change this when necessary.
+    | Ova putanja određuje gdje je cookie dostupan. Najčešće je to "/" (za cijeli sajt).
     |
     */
 
@@ -147,12 +137,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Session Cookie Domain
+    | Domen za Session Cookie
     |--------------------------------------------------------------------------
     |
-    | This value determines the domain and subdomains the session cookie is
-    | available to. By default, the cookie will be available to the root
-    | domain and all subdomains. Typically, this shouldn't be changed.
+    | Ovdje možeš ograničiti na koji domen/subdomen važi session cookie.
+    | Najčešće ostaviš prazno ili podrazumijevano.
     |
     */
 
@@ -160,25 +149,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | HTTPS Only Cookies
+    | Samo HTTPS Session Cookie
     |--------------------------------------------------------------------------
     |
-    | By setting this option to true, session cookies will only be sent back
-    | to the server if the browser has a HTTPS connection. This will keep
-    | the cookie from being sent to you when it can't be done securely.
+    | Ako je true, session cookie će se slati samo preko HTTPS konekcije.
+    | Preporučeno za produkciju sa SSL-om.
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => env('SESSION_SECURE_COOKIE', true), // treba biti true za HTTPS
+    'same_site' => 'lax', // ili 'strict' (zavisi od tvog frontenda)
 
     /*
     |--------------------------------------------------------------------------
-    | HTTP Access Only
+    | Samo HTTP Pristup Cookie-u
     |--------------------------------------------------------------------------
     |
-    | Setting this value to true will prevent JavaScript from accessing the
-    | value of the cookie and the cookie will only be accessible through
-    | the HTTP protocol. It's unlikely you should disable this option.
+    | Ako je true, JS iz browsera ne može pristupiti cookie-u (samo server-side).
+    | Preporučeno ostaviti true radi sigurnosti.
     |
     */
 
@@ -186,29 +174,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Same-Site Cookies
+    | Same-Site Cookie Opcija
     |--------------------------------------------------------------------------
     |
-    | This option determines how your cookies behave when cross-site requests
-    | take place, and can be used to mitigate CSRF attacks. By default, we
-    | will set this value to "lax" to permit secure cross-site requests.
-    |
-    | See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
-    |
-    | Supported: "lax", "strict", "none", null
+    | Ova opcija pomaže u zaštiti od CSRF napada. "lax" je podrazumijevano.
+    | Može biti: "lax", "strict", "none", null
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
-
+    'same_site' => env('SESSION_SAME_SITE', 'none'),
+    'secure' => env('SESSION_SECURE_COOKIE', true),
+    'domain' => env('SESSION_DOMAIN', null),
+    
     /*
     |--------------------------------------------------------------------------
-    | Partitioned Cookies
+    | Partitioned Cookies (Napredno)
     |--------------------------------------------------------------------------
     |
-    | Setting this value to true will tie the cookie to the top-level site for
-    | a cross-site context. Partitioned cookies are accepted by the browser
-    | when flagged "secure" and the Same-Site attribute is set to "none".
+    | Ako je true, cookie je vezan za top-level site u cross-site situacijama.
+    | Potrebno je secure + same-site none.
     |
     */
 

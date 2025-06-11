@@ -4,112 +4,82 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Defaults
+    | Podrazumijevana autentikacija
     |--------------------------------------------------------------------------
     |
-    | This option defines the default authentication "guard" and password
-    | reset "broker" for your application. You may change these values
-    | as required, but they're a perfect start for most applications.
+    | Ovdje određuješ koji "guard" i "broker" za reset lozinke su podrazumijevani
+    | za tvoju aplikaciju. Ovdje je guard 'web', a broker 'admins'.
     |
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
-        'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'guard' => 'web', // Podrazumijevani guard je web (sesija)
+        'passwords' => 'admins', // Podrazumijevani broker za reset lozinke je admins
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication Guards
+    | Guard-ovi za autentikaciju
     |--------------------------------------------------------------------------
     |
-    | Next, you may define every authentication guard for your application.
-    | Of course, a great default configuration has been defined for you
-    | which utilizes session storage plus the Eloquent user provider.
-    |
-    | All authentication guards have a user provider, which defines how the
-    | users are actually retrieved out of your database or other storage
-    | system used by the application. Typically, Eloquent is utilized.
-    |
-    | Supported: "session"
+    | Ovdje definišeš guard-ove (način autentikacije). Najčešće koristiš
+    | 'web' guard za prijavu preko browsera (sesija).
     |
     */
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
+            'driver' => 'session', // koristi PHP sesije za autentikaciju
+            'provider' => 'admins', // koristi provider admins (vidi ispod)
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | User Providers
+    | Provider-i korisnika
     |--------------------------------------------------------------------------
     |
-    | All authentication guards have a user provider, which defines how the
-    | users are actually retrieved out of your database or other storage
-    | system used by the application. Typically, Eloquent is utilized.
-    |
-    | If you have multiple user tables or models you may configure multiple
-    | providers to represent the model / table. These providers may then
-    | be assigned to any extra authentication guards you have defined.
-    |
-    | Supported: "database", "eloquent"
+    | Provider određuje kako se podaci o korisnicima dobijaju iz baze.
+    | Ovdje koristiš Eloquent model Admin i tabelu admins.
     |
     */
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+        'admins' => [
+            'driver' => 'eloquent', // koristi Eloquent ORM
+            'model' => App\Models\Admin::class, // koristi model Admin
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Resetting Passwords
+    | Resetovanje lozinke
     |--------------------------------------------------------------------------
     |
-    | These configuration options specify the behavior of Laravel's password
-    | reset functionality, including the table utilized for token storage
-    | and the user provider that is invoked to actually retrieve users.
-    |
-    | The expiry time is the number of minutes that each reset token will be
-    | considered valid. This security feature keeps tokens short-lived so
-    | they have less time to be guessed. You may change this as needed.
-    |
-    | The throttle setting is the number of seconds a user must wait before
-    | generating more password reset tokens. This prevents the user from
-    | quickly generating a very large amount of password reset tokens.
+    | Ovdje podešavaš opcije za resetovanje lozinke (tabela za tokene itd).
+    | 'provider' treba da bude isti kao iznad (admins).
     |
     */
 
     'passwords' => [
-        'users' => [
-            'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
-            'throttle' => 60,
+        'admins' => [
+            'provider' => 'admins', // koristi provider admins
+            'table' => 'password_reset_tokens', // tabela za reset tokene
+            'expire' => 60, // token važi 60 minuta
+            'throttle' => 60, // možeš tražiti novi token na svakih 60 sekundi
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Password Confirmation Timeout
+    | Timeout za potvrdu lozinke
     |--------------------------------------------------------------------------
     |
-    | Here you may define the number of seconds before a password confirmation
-    | window expires and users are asked to re-enter their password via the
-    | confirmation screen. By default, the timeout lasts for three hours.
+    | Koliko dugo (u sekundama) važi potvrda lozinke prije nego što moraš
+    | ponovo da uneseš šifru (default je 3 sata).
     |
     */
 
-    'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+    'password_timeout' => 10800,
 
 ];

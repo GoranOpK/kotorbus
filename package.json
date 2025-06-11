@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "start": "node server.js"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -15,6 +16,25 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "express": "^5.1.0",
         "http-proxy": "^1.18.1"
-    }
+    },
+    "name": "kotorbus",
+    "version": "1.0.0",
+    "description": "<<<<<<< HEAD <p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
+    "main": "server.js",
+    "directories": {
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/GoranOpK/kotorbus.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/GoranOpK/kotorbus/issues"
+    },
+    "homepage": "https://github.com/GoranOpK/kotorbus#readme"
 }

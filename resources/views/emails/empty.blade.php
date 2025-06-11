@@ -1,0 +1,1 @@
+{{-- Ovo je prazan view za email bez teksta --}}

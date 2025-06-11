@@ -6,52 +6,52 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Cache Store
+    | Podrazumijevani Cache Store
     |--------------------------------------------------------------------------
     |
-    | This option controls the default cache store that will be used by the
-    | framework. This connection is utilized if another isn't explicitly
-    | specified when running a cache operation inside the application.
+    | Ovdje biraš koji cache driver će biti korišćen kao osnovni u aplikaciji.
+    | Najčešće je to "file", "database" ili "redis". Možeš promijeniti u .env fajlu.
     |
     */
-
     'default' => env('CACHE_STORE', 'database'),
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Stores
+    | Cache Store-ovi
     |--------------------------------------------------------------------------
     |
-    | Here you may define all of the cache "stores" for your application as
-    | well as their drivers. You may even define multiple stores for the
-    | same cache driver to group types of items stored in your caches.
+    | Ovdje definišeš sve moguće cache "store-ove" (mjesta gdje se čuvaju podaci u kešu).
+    | Svaki store ima svoj driver. Možeš imati više store-ova istog tipa, npr. više redis ili file keša.
     |
-    | Supported drivers: "array", "database", "file", "memcached",
-    |                    "redis", "dynamodb", "octane", "null"
+    | Podržani driveri: "array", "database", "file", "memcached",
+    |                   "redis", "dynamodb", "octane", "null"
     |
     */
-
     'stores' => [
 
+        // "array" - koristi RAM (brzo, ali nestaje kad se resetuje app)
         'array' => [
             'driver' => 'array',
-            'serialize' => false,
+            'serialize' => false, // treba li serijalizovati podatke
         ],
 
+        // "database" - keš u bazi, u tabeli "cache"
         'database' => [
             'driver' => 'database',
-            'connection' => env('DB_CACHE_CONNECTION'),
-            'table' => env('DB_CACHE_TABLE', 'cache'),
-            'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
+            'connection' => env('DB_CACHE_CONNECTION'), // konekcija iz database.php
+            'table' => env('DB_CACHE_TABLE', 'cache'), // ime tabele u bazi
+            'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'), // za atomic locks (nije obavezno)
             'lock_table' => env('DB_CACHE_LOCK_TABLE'),
         ],
 
+        // "file" - keš na disku, u storage/framework/cache/data
         'file' => [
             'driver' => 'file',
-            'path' => storage_path('framework/cache/data'),
-            'lock_path' => storage_path('framework/cache/data'),
+            'path' => storage_path('framework/cache/data'), // folder za keš fajlove
+            'lock_path' => storage_path('framework/cache/data'), // folder za lock fajlove
         ],
 
+        // "memcached" - koristi memcached server (za veće projekte, brzi cache u RAM-u)
         'memcached' => [
             'driver' => 'memcached',
             'persistent_id' => env('MEMCACHED_PERSISTENT_ID'),
@@ -60,7 +60,8 @@ return [
                 env('MEMCACHED_PASSWORD'),
             ],
             'options' => [
-                // Memcached::OPT_CONNECT_TIMEOUT => 2000,
+                // Ovde možeš dodati dodatne opcije za memcached
+                // Primjer: Memcached::OPT_CONNECT_TIMEOUT => 2000,
             ],
             'servers' => [
                 [
@@ -71,12 +72,14 @@ return [
             ],
         ],
 
+        // "redis" - koristi Redis server (brz RAM cache, dobar za velike aplikacije)
         'redis' => [
             'driver' => 'redis',
-            'connection' => env('REDIS_CACHE_CONNECTION', 'cache'),
+            'connection' => env('REDIS_CACHE_CONNECTION', 'cache'), // konekcija iz redis.php
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
+        // "dynamodb" - koristi AWS DynamoDB za cache (cloud)
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),
@@ -86,6 +89,7 @@ return [
             'endpoint' => env('DYNAMODB_ENDPOINT'),
         ],
 
+        // "octane" - koristi Laravel Octane, za ekstremno brze performanse (Swoole, RoadRunner)
         'octane' => [
             'driver' => 'octane',
         ],
@@ -94,15 +98,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cache Key Prefix
+    | Prefiks za Cache Ključeve
     |--------------------------------------------------------------------------
     |
-    | When utilizing the APC, database, memcached, Redis, and DynamoDB cache
-    | stores, there might be other applications using the same cache. For
-    | that reason, you may prefix every cache key to avoid collisions.
+    | Ako koristiš APC, database, memcached, redis ili dynamodb, može se desiti da više aplikacija dijeli isti cache.
+    | Zato je preporučljivo koristiti prefiks da ne dođe do sudara među ključevima.
     |
     */
-
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
 
 ];
