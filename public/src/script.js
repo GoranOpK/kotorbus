@@ -101,14 +101,19 @@ async function reserveSlot() {
     email: email
   };
 
-  fetch('/api/reservations/reserve', {
+  // CSRF zaštita: Prvo povuci CSRF cookie pa onda POST rezervaciju!
+  await fetch('https://localhost:8000/sanctum/csrf-cookie', { credentials: 'include' });
+
+  await fetch('https://localhost:8000/api/reservations/reserve', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'X-XSRF-TOKEN': decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1] || '')
     },
+    credentials: 'include',
     body: JSON.stringify(data)
-  })
+})
   .then(res => res.json())
   .then(response => {
     if (response.success) {

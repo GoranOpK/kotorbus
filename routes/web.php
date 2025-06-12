@@ -8,6 +8,7 @@ use App\Http\Controllers\SupportController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 
 Route::get('/admin/login', function () {
@@ -93,6 +94,9 @@ Route::get('/test-csrf', function () {
     return view('test-csrf');
 });
 
+// Ovu rutu Laravel automatski dodaJE pri instalaciji Sanctuma
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
+
 // Welcome stranica (početna)
 Route::get('/', function () {
     return view('welcome');
@@ -101,7 +105,7 @@ Route::get('/', function () {
 // POST catch-all za web.php, PRE GET catch-all
 Route::post('/{any}', function () {
     abort(404, 'POST ruta ne postoji');
-})->where('any', '.*');
+})->where('any', '^(?!api/).*');
 
 // ======= EKSPPLICITNA RUTA ZA ADMINCP.HTML =======
 // Ova ruta MORA biti iznad globalnog catch-all-a!
