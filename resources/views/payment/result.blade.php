@@ -8,22 +8,22 @@
 
 @if($respCdeCat === "1")
     <div class="alert alert-danger">
-        Uneli ste netačne podatke. Proverite i pokušajte ponovo.
+        You have entered incorrect information. Please check and try again.
     </div>
 @elseif($respCdeCat === "2")
     <div class="alert alert-warning">
-        Plaćanje ovom karticom trenutno nije moguće.
+        Payment with this card is currently not possible.
         @if($retryTim && $retryPrd !== null)
             <br>
-            Možete pokušati ponovo za {{ $retryTim }}
-            @if($retryPrd === "0") minuta
-            @elseif($retryPrd === "1") sati
-            @elseif($retryPrd === "2") dana
+            You can try again in {{ $retryTim }}
+            @if($retryPrd === "0") minutes
+            @elseif($retryPrd === "1") hours
+            @elseif($retryPrd === "2") days
             @endif
         @endif
     </div>
 @elseif($respCdeCat === "3")
     <div class="alert alert-danger">
-        Plaćanje ovom karticom nije moguće jer je kartica blokirana. Koristite drugu karticu.
+        Payment with this card is not possible because the card is blocked. Please use another card.
     </div>
 @endif

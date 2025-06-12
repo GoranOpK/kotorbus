@@ -94,7 +94,7 @@ Route::get('/test-csrf', function () {
     return view('test-csrf');
 });
 
-// Ovu rutu Laravel automatski dodaJE pri instalaciji Sanctuma
+// Ovu rutu Laravel automatski dodaje pri instalaciji Sanctuma
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
 // Welcome stranica (početna)

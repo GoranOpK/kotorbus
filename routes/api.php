@@ -9,15 +9,14 @@ use App\Http\Controllers\SystemConfigController;
 use App\Http\Controllers\ExampleController;
 use App\Http\Controllers\MailController;
 
+// Testna ruta za izvještaj
+Route::get('admin/test-dnevni-finansijski', [AdminController::class, 'testDnevniFinansijski']);
+
+
 // Javne API rute
 Route::get('vehicle-types', [VehicleTypeController::class, 'index']);
 Route::get('timeslots', [TimeSlotController::class, 'index']);
 Route::get('timeslots/available', [TimeSlotController::class, 'availableSlots']);
-//Route::get('reservations/reserve', function () {
-//    return response()->json([
-//        'message' => 'Koristite POST zahtjev za rezervaciju.'
-//    ], 405);
-//});
 Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
 Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
 Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
@@ -27,7 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('reservations', [ReservationController::class, 'index']);
     Route::get('reservations/{reservation}', [ReservationController::class, 'show']);
     Route::get('admins', [AdminController::class, 'index']);
-});
+    });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::apiResource('timeslots', TimeSlotController::class)->except(['index', 'show']);

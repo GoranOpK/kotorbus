@@ -101,4 +101,13 @@ class AdminController extends Controller
             'message' => 'Invalid credentials',
         ], 401);
     }
+/**
+     * Test za slanje izvještaja
+     */
+    public function testDnevniFinansijski()
+    {
+        // Testni odgovor, ili prava logika izvještaja
+        return response()->json(['status' => 'ok', 'message' => 'Test dnevni finansijski izvještaj']);
+    }
+
 }

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Plaćanje karticom</title>
+    <title>Card Payment</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
-    <h2>Plaćanje karticom</h2>
+    <h2>Card Payment</h2>
 
     @if(session('success'))
         <div style="color: green;">{{ session('success') }}</div>
@@ -26,11 +26,11 @@
 
     <form method="POST" action="{{ route('payment.redirect-hpp') }}">
     @csrf
-    <label>Iznos (EUR):</label>
+    <label>Amount (EUR):</label>
     <input type="number" name="amount" step="0.01" required>
     <label>Email:</label>
     <input type="email" name="email" required>
-    <button type="submit">Nastavi na plaćanje</button>
+    <button type="submit">Proceed to Payment</button>
 </form>
 </body>
 </html>
