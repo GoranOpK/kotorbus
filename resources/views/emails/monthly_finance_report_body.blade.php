@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Mjesečni finansijski izvještaj</title>
+    <title>Mjesečni finansijski izvještaj - Kotor Bus</title>
 </head>
 <body>
     <h2>Mjesečni finansijski izvještaj</h2>

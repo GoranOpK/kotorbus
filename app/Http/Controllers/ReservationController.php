@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PaymentReservationConfirmationMail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReservationController extends Controller
 {
@@ -54,7 +55,7 @@ class ReservationController extends Controller
         $reg = $validated['license_plate'];
         $dropOffSlot = $validated['drop_off_time_slot_id'];
 
-        $count = \App\Models\Reservation::where([
+        $count = Reservation::where([
             ['license_plate', $reg],
             ['reservation_date', $date],
             ['drop_off_time_slot_id', $dropOffSlot]
@@ -68,11 +69,11 @@ class ReservationController extends Controller
         }
 
         // PRAVILO 2: Rezervacija moguća najkasnije minut prije termina drop-off
-        $slot = \App\Models\TimeSlot::find($dropOffSlot);
+        $slot = TimeSlot::find($dropOffSlot);
         if (!$slot) {
             return response()->json(['success' => false, 'message' => 'Nepostojeći termin!'], 422);
         }
-        $dateTime = \Illuminate\Support\Carbon::parse($date . ' ' . $slot->start_time);
+        $dateTime = Carbon::parse($date . ' ' . $slot->start_time);
         if (now()->diffInMinutes($dateTime, false) < 1) {
             return response()->json([
                 'success' => false,
@@ -105,13 +106,11 @@ class ReservationController extends Controller
 
     // Rezervacija iz frontenda (možeš koristiti samo store, nema potrebe za duplikatom!)
     public function reserve(Request $request)
-     {
-       // \Log::info('Reserve metoda pozvana!');
-        // Možeš pozvati $this->store($request) ili, još bolje, koristi samo jednu metodu (store)
+    {
         return $this->store($request);
-       // return response()->json(['message' => 'Radi!'], 200);
     }
 
+    // Slanje računa i potvrde korisniku na email (ručno)
     public function sendInvoiceToUser($id)
     {
         $reservation = Reservation::findOrFail($id);
@@ -120,9 +119,8 @@ class ReservationController extends Controller
             return response()->json(['error' => 'Email adresa nije pronađena za ovu rezervaciju.'], 422);
         }
 
-        // GENERIŠI PDF-ove! (ovo je samo primjer)
-        $invoicePdf = $this->generateInvoicePdf($reservation); // metoda koju trebaš napraviti
-        $confirmationPdf = $this->generateConfirmationPdf($reservation); // metoda koju trebaš napraviti
+        $invoicePdf = $this->generateInvoicePdf($reservation);
+        $confirmationPdf = $this->generateConfirmationPdf($reservation);
 
         Mail::to($reservation->email)->send(
             new PaymentReservationConfirmationMail(
@@ -134,6 +132,8 @@ class ReservationController extends Controller
 
         return response()->json(['success' => 'Invoice and payment confirmation sent to user email.']);
     }
+
+    // Ažuriranje rezervacije (npr. postavi status na paid i šalji mail)
     public function update(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
@@ -152,20 +152,22 @@ class ReservationController extends Controller
 
         $reservation->update($validated);
 
-        // Možeš dodati slanje maila kad je status promijenjen u 'paid'
+        // Šalji mail kad je status promijenjen u 'paid'
         if (
-        isset($validated['status']) &&
-        $validated['status'] === 'paid' &&
-        $reservation->email
-    ) {
-        $userName = $reservation->user_name;
-        $invoicePdf = $this->generateInvoicePdf($reservation); // implementiraj ovu funkciju
-        $confirmationPdf = $this->generateConfirmationPdf($reservation); // implementiraj ovu funkciju
+            isset($validated['status']) &&
+            $validated['status'] === 'paid' &&
+            $reservation->email
+        ) {
+            $userName = $reservation->user_name;
+            $invoicePdf = $this->generateInvoicePdf($reservation);
+            $confirmationPdf = $this->generateConfirmationPdf($reservation);
 
-        Mail::to($reservation->email)->send(
-            new PaymentReservationConfirmationMail($userName, $invoicePdf, $confirmationPdf)
-        );
-    }
+            Mail::to($reservation->email)->send(
+                new PaymentReservationConfirmationMail($userName, $invoicePdf, $confirmationPdf)
+            );
+        }
+
+        return response()->json(['success' => 'Reservation updated successfully.']);
     }
 
     public function destroy($id)
@@ -193,5 +195,21 @@ class ReservationController extends Controller
         $date = $request->input('date', now()->toDateString());
         $slots = $this->slotService->getSlotsForDate($date);
         return response()->json($slots);
+    }
+
+    // --- PDF GENERATORI ---
+
+    protected function generateInvoicePdf($reservation)
+    {
+        return Pdf::loadView('reports.reservation_invoice_pdf', [
+            'reservation' => $reservation
+        ])->output();
+    }
+
+    protected function generateConfirmationPdf($reservation)
+    {
+        return Pdf::loadView('reports.reservation_confirmation_pdf', [
+            'reservation' => $reservation
+        ])->output();
     }
 }
