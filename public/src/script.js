@@ -64,6 +64,8 @@ function filterTimeSlots() {
       arrivalSelect.value = '';
     }
   }
+
+  checkFreeParking();
 }
 
 async function reserveSlot() {
@@ -74,14 +76,15 @@ async function reserveSlot() {
   const country = document.getElementById('country-input').value.trim();
   const registration = document.getElementById('registration-input').value.trim();
   const email = document.getElementById('email').value.trim();
-  const vehicleType = document.getElementById('vehicle_type_id').value;
+  const vehicleTypeSelect = document.getElementById('vehicle_type_id');
+  const vehicleTypeId = vehicleTypeSelect.value;
+  const selectedOption = vehicleTypeSelect.selectedOptions[0];
+  const vehiclePrice = selectedOption ? selectedOption.getAttribute('data-price') : null;
 
+  // Fetch slots
   const slotsResponse = await fetch('/api/timeslots');
   const slotsData = await slotsResponse.json();
   const slots = slotsData.data || slotsData;
-  console.log('Vrijednost iz dropdown-a za dolazak:', arrivalTimeStr);
-  console.log('Vrijednost iz dropdown-a za odlazak:', departureTimeStr);
-  console.log('Svi slotovi sa backend-a:', slots);
   const arrivalSlot = slots.find(slot => slot.time_slot.startsWith(arrivalTimeStr));
   const departureSlot = slots.find(slot => slot.time_slot.startsWith(departureTimeStr));
 
@@ -97,31 +100,67 @@ async function reserveSlot() {
     user_name: company,
     country: country,
     license_plate: registration,
-    vehicle_type_id: vehicleType,
+    vehicle_type_id: vehicleTypeId,
     email: email
   };
 
-  // CSRF zaštita: Prvo povuci CSRF cookie pa onda POST rezervaciju!
-  await fetch('https://localhost:8000/sanctum/csrf-cookie', { credentials: 'include' });
+  try {
+    // CSRF zaštita: Prvo povuci CSRF cookie pa onda POST rezervaciju!
+    await fetch('https://localhost:8000/sanctum/csrf-cookie', { credentials: 'include' });
 
-  await fetch('https://localhost:8000/api/reservations/reserve', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-XSRF-TOKEN': decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1] || '')
-    },
-    credentials: 'include',
-    body: JSON.stringify(data)
-})
-  .then(res => res.json())
-  .then(response => {
+    const res = await fetch('https://localhost:8000/api/reservations/reserve', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-XSRF-TOKEN': decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1] || '')
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+
+    const response = await res.json();
+
     if (response.success) {
+      // Store in localStorage
+      localStorage.setItem('reserved_vehicle_type_id', vehicleTypeId);
+      localStorage.setItem('reserved_vehicle_type_price', vehiclePrice);
+      // (Optional) Store other form data as needed
+
       alert('Reservation successful!');
+      window.location.href = "payment-form.html";
     } else {
       alert('Reservation failed!');
     }
-  });
+  } catch (err) {
+    alert('An error occurred during reservation.');
+    console.error(err);
+  }
+}
+
+function checkFreeParking() {
+  const arrivalSelect = document.getElementById('arrival-time-slot');
+  const departureSelect = document.getElementById('departure-time-slot');
+  const reserveBtn = document.getElementById('reserve-btn');
+  const freeMsg = document.getElementById('free-parking-msg');
+
+  // Get all option values except the placeholder
+  const arrivalOptions = Array.from(arrivalSelect.options).filter(opt => opt.value);
+  const departureOptions = Array.from(departureSelect.options).filter(opt => opt.value);
+
+  // Check if first arrival and last departure are selected
+  const isFirstArrival = arrivalSelect.value === arrivalOptions[0]?.value;
+  const isLastDeparture = departureSelect.value === departureOptions[departureOptions.length - 1]?.value;
+
+  if (isFirstArrival && isLastDeparture) {
+    reserveBtn.disabled = true;
+    reserveBtn.style.background = "#ccc";
+    freeMsg.style.display = "inline";
+  } else {
+    reserveBtn.disabled = false;
+    reserveBtn.style.background = "";
+    freeMsg.style.display = "none";
+  }
 }
 
 const translations = {
@@ -138,7 +177,8 @@ const translations = {
     terms: "terms and conditions",
     mustAgree: "You must agree to the terms to reserve a slot.",
     reserve: "Reserve",
-    termsTitle: "Terms and Conditions"
+    termsTitle: "Terms and Conditions",
+    freeParking: "Parking is free for this time segment!"
   },
   mne: {
     pickDate: "Izaberite datum",
@@ -153,7 +193,8 @@ const translations = {
     terms: "uslovima korišćenja",
     mustAgree: "Morate prihvatiti uslove da biste rezervisali termin.",
     reserve: "Rezerviši",
-    termsTitle: "Uslovi korišćenja"
+    termsTitle: "Uslovi korišćenja",
+    freeParking: "Parking je besplatan za ovaj vremenski segment!"
   }
 };
 
@@ -223,6 +264,11 @@ function setLanguage(lang) {
   };
   const termsModalDiv = document.getElementById('terms-content');
   if (termsModalDiv) termsModalDiv.innerHTML = termsText[lang];
+
+  const freeMsg = document.getElementById('free-parking-msg');
+  if (freeMsg) {
+    freeMsg.textContent = translations[lang].freeParking;
+  }
 }
 
 // --- DOMContentLoaded EVENT HANDLER ---
@@ -275,10 +321,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const option = document.createElement('option');
         option.value = type.id;
         option.textContent = type.description_vehicle || type.name || type.category || type.title || `Type ${type.id}`;
+        option.setAttribute('data-price', type.price);
         select.appendChild(option);
       });
     });
 
+  // Slušaj promene na dropdown-ovima za filtraciju vremena
+  document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
+  document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
   // Slušaj promene na dropdown-ovima za filtraciju vremena
   document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
   document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
@@ -292,6 +342,8 @@ document.addEventListener('DOMContentLoaded', function () {
       // Re-attach listeners after repopulating
       document.getElementById('arrival-time-slot').addEventListener('change', filterTimeSlots);
       document.getElementById('departure-time-slot').addEventListener('change', filterTimeSlots);
+      // After repopulating time slots in reservation_date change handler
+      checkFreeParking();
     });
   });
 
@@ -309,4 +361,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('lang-cg').addEventListener('click', function() {
     setLanguage('mne');
   });
+
+  document.getElementById('reserve-btn').addEventListener('click', reserveSlot);
 });

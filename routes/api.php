@@ -17,6 +17,7 @@ Route::get('admin/test-dnevni-finansijski', [AdminController::class, 'testDnevni
 Route::get('vehicle-types', [VehicleTypeController::class, 'index']);
 Route::get('timeslots', [TimeSlotController::class, 'index']);
 Route::get('timeslots/available', [TimeSlotController::class, 'availableSlots']);
+Route::get('timeslots/reserved-today', [\App\Http\Controllers\TimeSlotController::class, 'reservedSlotsToday']);
 Route::post('reservations/reserve', [ReservationController::class, 'reserve'])->middleware('throttle:10,1');
 Route::get('reservations/slots', [ReservationController::class, 'showSlots']);
 Route::get('reservations/by-date', [ReservationController::class, 'byDate']);
