@@ -11,11 +11,8 @@ use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use Illuminate\Support\Facades\DB;
 
-
-Route::get('/admin/login', function () {
-    \Log::info('ADMIN LOGIN HIT', request()->all());
-    return 'TEST ADMIN LOGIN';
-});
+// DODANO: Controller za readonly admin prikaz rezervisanih slotova
+use App\Http\Controllers\AdminReadonlyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +82,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [LoginController::class, 'logout'])->name('logout');
         // Generisanje izvještaja
         Route::get('izvjestaj', [ReportController::class, 'generate'])->name('report');
+        // Prikaz rezervisanih slotova readonly adminu
+        Route::get('todays-reserved-slots', [AdminReadonlyController::class, 'todaysReservedSlots'])
+            ->name('todays_reserved_slots');
         // Samo pravi admin (middleware: admin)
         Route::middleware('admin')->group(function () {
             // Dashboard prikaz

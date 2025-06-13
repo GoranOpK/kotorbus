@@ -1,15 +1,6 @@
 const CSRF_TOKEN = 'QvfNezVoOGu65W0CmVX3sM2VdQ7bsJL7Fgm65OGj';
 
-// Postavi vehicle_type_id iz localStorage na učitavanje stranice
-document.addEventListener('DOMContentLoaded', function() {
-    const vehicleTypeId = localStorage.getItem('reserved_vehicle_type_id');
-    if (vehicleTypeId) {
-        document.getElementById('vehicle_type_id_hidden').value = vehicleTypeId;
-    } else {
-        alert("Nije odabran tip vozila. Vratite se na rezervaciju.");
-        window.location.href = "index.html";
-    }
-});
+
 
 // Funkcija za enkodiranje forme
 function encodeFormData(data) {
