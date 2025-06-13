@@ -11,14 +11,22 @@ class PaymentController extends Controller
     {
         // Validacija ulaza
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1',
+            // amount više nije deo forme, već ga dobijaš iz baze po tipu vozila
+            'vehicle_type_id' => 'required|exists:vehicle_types,id',
             'email'  => 'required|email',
         ]);
+
+        // Dohvati cijenu iz baze na osnovu vehicle_type_id
+        $vehicleType = \DB::table('vehicle_types')->find($validated['vehicle_type_id']);
+        if (!$vehicleType) {
+            return back()->with('error', 'Nepostojeći tip vozila!');
+        }
+        $amount = $vehicleType->price;
 
         // Priprema payload-a (popuni prema svom ugovoru i dokumentaciji)
         $payload = [
             'merchantTransactionId' => uniqid('HPP-'),
-            'amount' => number_format($validated['amount'], 2, '.', ''),
+            'amount' => number_format($amount, 2, '.', ''), // koristi pravu cijenu iz baze
             'currency' => 'EUR',
             'successUrl' => route('payment.success'),
             'cancelUrl'  => route('payment.cancel'),
@@ -81,7 +89,7 @@ class PaymentController extends Controller
     {
         // Test podaci
         $testRequest = new Request([
-            'amount' => 10,
+            'vehicle_type_id' => 1, // test tip vozila
             'email' => 'test@example.com',
         ]);
 

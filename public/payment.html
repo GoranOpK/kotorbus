@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kotorbus Payment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="flex:1;"></div>
+    <img src="logo.png" alt="Kotorbus Logo" style="display:block; margin:auto;">
+    <div style="flex:1; display:flex; justify-content: flex-end; gap:10px; align-items:center;">
+      <img src="gb.png" alt="English" id="lang-en" style="width:32px; height:32px; cursor:pointer;">
+      <img src="mne.png" alt="Crnogorski" id="lang-cg" style="width:32px; height:32px; cursor:pointer;">
+    </div>
+  </header>
+
+  <div class="container" style="max-width:400px; margin:40px auto;">
+    <form id="payment-form">
+      <input type="text" name="card_number" placeholder="Card Number" required /><br/>
+      <input type="text" name="exp_month" placeholder="MM" required maxlength="2" style="width: 50px;"/>
+      <input type="text" name="exp_year" placeholder="YY" required maxlength="2" style="width: 50px;"/>
+      <input type="text" name="cvv" placeholder="CVV" required maxlength="4" style="width: 50px;"/><br/>
+      <input type="text" name="cardholder" placeholder="Cardholder Name" required /><br/>
+      <input type="hidden" name="vehicle_type_id" id="vehicle_type_id_hidden" />
+      <button type="submit">Plati</button>
+    </form>
+    <div id="payment-result"></div>
+  </div>
+
+  <footer>
+    <img src="logoop.png" alt="OpKotor" style="height:80px;">
+    <p>Bidonkaktus 🌵 &copy; 2025 Kotorbus</p>
+  </footer>
+  <script src="src/payment-form.js"></script>
+</body>
+</html>

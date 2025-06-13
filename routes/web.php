@@ -9,6 +9,7 @@ use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+use Illuminate\Support\Facades\DB;
 
 
 Route::get('/admin/login', function () {
@@ -32,8 +33,32 @@ Route::get('/placanje', [PaymentController::class, 'showForm'])->name('payment.f
 
 // Procesiranje plaćanja (submit forme)
 Route::post('/procesiraj-placanje', function(Request $req) {
-    Log::info('Stigao je POST na /procesiraj-placanje', $req->all());
-    return response()->json(['msg' => 'OK', 'data' => $req->all()]);
+    $vehicleTypeId = $req->input('vehicle_type_id');
+    $vehicleType = DB::table('vehicle_types')->find($vehicleTypeId);
+
+    if (!$vehicleType) {
+        return response()->json(['message' => 'Nepostojeći tip vozila!'], 422);
+    }
+
+    $price = $vehicleType->price;
+
+    // Priprema payload-a za plaćanje (samo ono što banci treba)
+    $payload = [
+        'amount'      => $price,
+        'card_number' => $req->input('card_number'),
+        'exp_month'   => $req->input('exp_month'),
+        'exp_year'    => $req->input('exp_year'),
+        'cvv'         => $req->input('cvv'),
+        'cardholder'  => $req->input('cardholder'),
+        // vehicle_type_id NIJE potreban za banku, ali možeš ga sačuvati za tvoje potrebe
+    ];
+
+    // Ovdje šalji $payload prema servisu/plaćanju
+    // (Ovdje samo vraćamo za test)
+    return response()->json([
+        'message' => 'OK',
+        'payload' => $payload,
+    ]);
 });
 
 // Callback za online plaćanje
