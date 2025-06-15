@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--  <head>
+  <meta charset="UTF-8">
+  <title>Kotorbus Admin Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+</head> -->
+<link rel="stylesheet" href="src/style.css">
+<body>
+  <header style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="flex:1;"></div>
+    <img src="src/logo.png" alt="Kotorbus Logo" style="display:block; margin:auto;">
+    <div style="flex:1; display:flex; justify-content: flex-end; gap:10px; align-items:center;">
+      <img src="src/gb.png" alt="English" id="lang-en" style="width:32px; height:32px; cursor:pointer;">
+      <img src="src/mne.png" alt="Crnogorski" id="lang-cg" style="width:32px; height:32px; cursor:pointer;">
+    </div>
+  </header>
+
+  <div class="main-container" style="display: flex; gap: 40px; align-items: flex-start;">
+    <div id="calendar"></div>
+    <div id="admin-section" style="display:block; min-width:340px;">
+      <h2 id="admin-title">Admin Panel</h2>
+      <div class="admin-panel-block" style="margin-bottom:24px;">
+        <h3>Block time slots for a date</h3>
+        <input type="date" id="block-slot-date">
+        <div id="slots-checkbox-list" style="margin:10px 0;"></div>
+        <button id="block-slots-btn" type="button">Block selected slots</button>
+      </div>
+
+      <div class="admin-panel-block" style="margin-bottom:24px;">
+        <h3>Block entire day</h3>
+        <input type="date" id="block-day-date">
+        <button id="block-day-btn" type="button">Block day</button>
+      </div>
+
+      <div class="admin-panel-block" style="margin-bottom:24px;">
+        <h3>Update number of slots</h3>
+        <input type="number" id="num-slots" min="1" max="100" placeholder="Number of slots">
+        <button id="update-slots-btn" type="button">Update</button>
+      </div>
+
+      <div class="admin-panel-block" style="margin-bottom:24px;">
+        <h3>Edit reservation</h3>
+        <input type="text" id="edit-reservation-id" placeholder="Reservation ID or Email">
+        <button id="edit-reservation-btn" type="button">Find</button>
+        <div id="edit-reservation-form" style="display:none;"></div>
+      </div>
+
+      <div class="admin-panel-block" style="margin-bottom:24px;">
+        <h3>Free reservation (no payment)</h3>
+        <input type="text" id="free-reservation-id" placeholder="Reservation ID or Email">
+        <button id="free-reservation-btn" type="button">Grant Free</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Terms and Conditions (optional for admin, can be reused if needed) -->
+  <div id="terms-modal">
+    <div class="modal-content">
+      <span class="close" id="close-terms">&times;</span>
+      <h2 id="terms-title">Terms and Conditions</h2>
+      <div style="max-height:70vh; overflow-y:auto;" id="terms-content"></div>
+    </div>
+  </div>
+
+  <footer>
+    <img src="src/logoop.png" alt="OpKotor" style="height:80px;">
+    <p>Bidonkaktus 🌵 &copy; 2025 Kotorbus</p>
+  </footer>
+  <script src="src/admin.js"></script>
+</body>
+</html>

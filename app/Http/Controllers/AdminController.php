@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -33,13 +33,12 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|email|unique:admins|max:255',
             'password' => 'required|string|min:6',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-
+        // NEMA Hash::make! Mutator u modelu će odraditi hashovanje.
         $admin = Admin::create($validated);
         return response()->json($admin, 201);
     }
@@ -52,15 +51,12 @@ class AdminController extends Controller
         $admin = Admin::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:admins,email,' . $id,
             'password' => 'sometimes|required|string|min:6',
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
-
+        // NEMA Hash::make! Mutator u modelu će odraditi hashovanje.
         $admin->update($validated);
         return response()->json($admin, 200);
     }
@@ -80,28 +76,44 @@ class AdminController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
+        // Pronađi admina po email-u
+        $admin = Admin::where('email', $request->email)->first();
 
-            // NEMA provere role, jer svi su admini iz ove tabele
-            $token = $user->createToken('admin-token')->plainTextToken;
+        \Log::info('LOGIN EMAIL: ' . $request->email);
+        \Log::info('LOGIN PASS: ' . $request->password);
+        \Log::info('HASH IZ BAZE: [' . $admin->password . ']');
+        \Log::info('HASH LENGTH: ' . strlen($admin->password));
 
-            return response()->json([
-                'token' => $token,
-                'message' => 'Login successful',
-            ], 200);
+        // Provjeri lozinku
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        // Kreiraj i vrati token
+        $token = $admin->createToken('admin-panel')->plainTextToken;
+
         return response()->json([
-            'message' => 'Invalid credentials',
-        ], 401);
+            'token' => $token,
+            'admin' => $admin,
+            'message' => 'Login successful',
+        ], 200);
     }
-/**
+
+    /**
+     * Logout admina (briše token)
+     */
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out successfully'], 200);
+    }
+
+    /**
      * Test za slanje izvještaja
      */
     public function testDnevniFinansijski()
@@ -109,5 +121,4 @@ class AdminController extends Controller
         // Testni odgovor, ili prava logika izvještaja
         return response()->json(['status' => 'ok', 'message' => 'Test dnevni finansijski izvještaj']);
     }
-
 }

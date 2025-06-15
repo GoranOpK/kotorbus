@@ -85,7 +85,7 @@ footer {
   padding: 16px 0;
   width: 100%;
   text-align: center;
-  margin-bottom: 0;
+  margin: 0;
   border: none;
   flex-shrink: 0;
 }
@@ -194,7 +194,7 @@ body {
   flex-direction: column;
 }
 
-.container {
+.admin-login-container {
   flex: 1 0 auto;
 }
 
@@ -202,4 +202,35 @@ body {
   font-size: 0.9em; /* or 0.8em, 12px, etc. */
   max-height: 70vh;   /* Increase from 300px to 70% of viewport height */
   overflow-y: auto;
+}
+
+.admin-login-container {
+  max-width: 350px;
+  width: 100%;
+  margin: 80px auto;
+  padding: 32px 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.admin-login-container input,
+.admin-login-container button {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+.admin-login-container input[type="text"],
+.admin-login-container input[type="email"],
+.admin-login-container input[type="password"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
 }

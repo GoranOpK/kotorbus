@@ -12,8 +12,10 @@ class AuthorizeAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        // Provjeri da li postoji autentifikovani korisnik i da NIJE 'control'
-        if (!$request->user() || $request->user()->username === 'control') {
+        // Koristi Sanctum guard eksplicitno za API autentifikaciju
+        $admin = auth('sanctum')->user();
+
+        if (!$admin || $admin->username === 'control') {
             abort(403, 'Unauthorized action.');
         }
 
